@@ -1,11 +1,13 @@
 import React from 'react';
-import MyPiece from './MyPiece.jsx';
+import Piece from './Piece.jsx';
 import { ThemeContext } from './context/ThemeContext';
 import { useContext } from 'react';
 
 const Board = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [selectedId, setSelectedId] = React.useState(null);
+  const [legalMoves, setLegalMoves] = React.useState([]);
+
 
   const boardStyle = {
     display: 'grid',
@@ -69,7 +71,8 @@ const Board = () => {
       ]);
 
       const getSquareColor = (index) => {
-        if (index === selectedId) return 'yellow'; // highlight selected square
+        if (index === selectedId) return 'yellow';
+        if (legalMoves.includes(index)) return 'lightgreen';
       
         const row = Math.floor(index / 8);
         const col = index % 8;
@@ -79,6 +82,7 @@ const Board = () => {
           ? (isLightSquare ? '#769656' : '#EEEED2')
           : (isLightSquare ? '#f0d9b5' : '#b58863');
       };
+      
       
       
       
@@ -92,96 +96,94 @@ const Board = () => {
     gap: '1px',
     };
 
-    /*
-    const handleGetId = (index) => {
-        if (arrayOfChildRefs.current[index]) {
-          const id = arrayOfChildRefs.current[index].getId();
-          console.log('ID of child at index', index, 'is:', id);
-        } else {
-          console.log('No ref found for index', index);
-        }
-      };
-      */
-
-      /*
-      const handleGetId = (index) => {
-        if (arrayOfChildRefs.current[index]) {
-          const id = arrayOfChildRefs.current[index].getId();
-          console.log('ID of child at index', index, 'is:', id);
-        } else {
-          console.log('No ref found for index', index);
-        }
-      };
-      */
-
-      /*
-    const handleChildClick = (clickedId) => {
-        console.log('child called this function  .....:');
-        console.log('Piece clicked with id:', clickedId);
-        // look for empty spaces and change their color to yellow
-        const updatedPieces = pieces.map(piece =>
-            piece.name === 'Empty' ? { ...piece, color: 'yellow' } : piece  
-        );
-        // go through the arrayOfChildRefs and change the color of the
-        // empty pieces to yellow
-        arrayOfChildRefs.current.forEach((childRef, index) => {
-            if (childRef && pieces[index].name === 'Empty') {
-                childRef.changeColor('yellow');
-            }
-        });
-
-        //console.log('Updated pieces:', updatedPieces);
-        // filter out the pieces with yellow color
-        //setPieces(updatedPieces); 
-        
-        if (arrayOfChildRefs.current[3]) {
-           arrayOfChildRefs.current[3].changeColor("yellow");
-             
-        }
-        
-
-         // For example, you could change the color of the piece or perform some action
-    }   // iterate over the pieces and update the color of all the pieces to yellow
-    // console.log('set_Pieces called with pieces:', pieces);
-   
-    */
-
 
 
     const handleChildClick = (clicked_id) => {
-      console.log('Child clicked with id:', clicked_id);
-      console.log('Selected ID before click:', selectedId);
-      if (selectedId !== null) {
-        if (clicked_id === selectedId) {
-          console.log('Clicked the same piece, deselecting it.');
-          setSelectedId(null);
-          return;
-        }
-        console.log('Selected ID after click:', selectedId);
-      }
-
       const clickedId = parseInt(clicked_id);
+      console.log('Clicked piece at index:', clickedId);
     
+      // Deselect if clicking the selected piece
+      if (selectedId === clickedId) {
+        setSelectedId(null);
+        setLegalMoves([]);
+        return;
+      }
+    
+      // If no piece selected yet
       if (selectedId === null) {
-        // First click — select the piece if it's not empty
         if (pieces[clickedId].name !== 'Empty') {
           setSelectedId(clickedId);
+    
+          // If it's a pawn, calculate legal moves
+          const piece = pieces[clickedId];
+          if (piece.name === 'Pawn') {
+            const forwardDir = piece.color === 'red' ? 1 : -1;
+            const oneStep = clickedId + 8 * forwardDir;
+            const twoStep = clickedId + 16 * forwardDir;
+            const legal = [];
+    
+            if (pieces[oneStep] && pieces[oneStep].name === 'Empty') {
+              legal.push(oneStep);
+              // Allow 2-step if on initial rank
+              const startRow = piece.color === 'red' ? 1 : 6; //1 for red pawn line, 6 for grey pawn line
+              const row = Math.floor(clickedId / 8);
+              if (row === startRow && pieces[twoStep] && pieces[twoStep].name === 'Empty') {
+                legal.push(twoStep);
+              }
+            }
+    
+            setLegalMoves(legal);
+          } else if (piece.name === 'Rook') {
+            const legal = [];
+            const directions = [-1, 1, -8, 8]; // left, right, up, down
+            const startRow = Math.floor(clickedId / 8);
+          
+            for (const step of directions) {
+              let nextId = clickedId;
+          
+              while (true) {
+                nextId += step;
+          
+                // Stop if out of bounds
+                if (nextId < 0 || nextId >= 64) break;
+          
+                // Prevent left/right wrap-around
+                const nextRow = Math.floor(nextId / 8);
+                if ((step === -1 || step === 1) && nextRow !== Math.floor((nextId - step) / 8)) break;
+          
+                const target = pieces[nextId];
+          
+                if (target.name === 'Empty') {
+                  legal.push(nextId);
+                } else {
+                  if (target.color !== piece.color) {
+                    legal.push(nextId); // Can capture opponent piece
+                  }
+                  break; // Stop on any piece
+                }
+              }
+            }
+          
+            setLegalMoves(legal);
+          }
+          
         }
-      } else {
-        // Second click — move the piece
+        return;
+      }
+    
+      // Handle move
+      if (legalMoves.includes(clickedId)) {
         const newPieces = [...pieces];
-        //check clickedId for postion legitimacy
-        
-        // Move the piece
         newPieces[clickedId] = pieces[selectedId];
-        
-        // Clear the original square
-        newPieces[selectedId] = { id: `${selectedId}`, name: 'Empty', color: 'orange' };
+        newPieces[selectedId] = { id: `${selectedId}`, name: 'Empty', color: 'green' };
     
         setPieces(newPieces);
-        setSelectedId(null);
       }
+    
+      setSelectedId(null);
+      setLegalMoves([]);
     };
+    
     
 
 
@@ -209,7 +211,7 @@ const Board = () => {
             alignItems: 'center',
           }}
         >
-          <MyPiece
+          <Piece
             id={index}
             myname={piece.name}
             color={piece.color}
