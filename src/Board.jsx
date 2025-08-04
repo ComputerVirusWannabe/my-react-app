@@ -96,44 +96,60 @@ const Board = () => {
 
 
     const handleChildClick = (clicked_id, clicked_location) => {
-        console.log('Clicked piece with id:', clicked_id, ' at location:', clicked_location);
-        if (pair.source === null) {  // clicked first piece
-            console.log('First piece clicked:', clicked_id);
-            //setPair({ source: clicked_id, target: null });
-            setPair({ source: {id: clicked_id, location: clicked_location}, target: null });
-            // highlight the clicked piece
-            arrayOfChildRefs.current[clicked_location].changeColor('yellow');
+      console.log('Clicked piece with id:', clicked_id, ' at location:', clicked_location);
+    
+      // Always clear all square colors
+      arrayOfChildRefs.current.forEach((ref, i) => {
+        if (ref) ref.changeColor(getSquareColor(i));
+      });
+    
+      if (pair.source === null) {
+        console.log('First piece clicked:', clicked_id);
+    
+        setPair({ source: { id: clicked_id, location: clicked_location }, target: null });
+    
+        // Highlight selected piece
+        arrayOfChildRefs.current[clicked_location].changeColor('yellow');
+    
+        // Highlight legal moves
+        const legal = arrayOfChildRefs.current[clicked_location].getLegitimatePaths();
+        setLegalMoves(legal);
+        legal.forEach((i) => {
+          if (arrayOfChildRefs.current[i]) {
+            arrayOfChildRefs.current[i].changeColor('lightgreen');
+          }
+        });
+    
+      } else if (pair.target === null) {
+        console.log('Second piece clicked, current pair = ', pair);
+        setPair({ ...pair, target: { id: clicked_id, location: clicked_location } });
+    
+        const legitimatePaths = arrayOfChildRefs.current[pair.source.location].getLegitimatePaths();
+        console.log('Legitimate paths:', legitimatePaths);
+    
+        if (legitimatePaths.includes(clicked_location)) {
+          console.log('Valid move, updating board...');
+          const newPieces = [...pieces];
+          newPieces[clicked_location] = pieces[pair.source.location];
+          newPieces[pair.source.location] = {
+            id: `${pair.source.location}`,
+            name: 'Empty',
+            color: 'green',
+          };
+          setPieces(newPieces);
+        } else {
+          console.log('Invalid move');
         }
-        else if (pair.target === null) {  // clicked second piece
-            console.log('Second piece clicked, current pair = ', pair);
-            setPair({...pair, target: {id: clicked_id, location: clicked_location} });
-            arrayOfChildRefs.current[clicked_location].changeColor('cyan');
-            // Call the parent function to handle the move
-            // look in the source piece and get the legitimate paths
-            const legitimatePaths = arrayOfChildRefs.current[pair.source.location].getLegitimatePaths();
-            console.log('Legitimate paths for source piece:', legitimatePaths);
-        
-
-            if (legitimatePaths.includes(clicked_location)) {
-                console.log('Legitimate: Moving piece from', pair.source.location, 'to', clicked_location);
-                    //
-            // if target is in the legitimate paths of source,, then move the source piece to target location
-            // by  moving the piece in the pieces state (array) and update its location acordingly
-            // in the pieces state, move the piece from pair.source.location to clicked_location
-            const newPieces = [...pieces];
-            
-            newPieces[clicked_location] = pieces[pair.source.location];
-            newPieces[pair.source.location] = { id: `${pair.source.location}`, name: 'Empty', color: 'green' };
-            setPieces(newPieces);
-                // reset the pair
-                setPair({ source: null, target: null });
-            } else {
-                console.log('Illegimate, Invalid move, target location not in legitimate paths');
-            }
-        }
-        //console.log('Current pair:', pair);
+    
+        // Reset everything
+        setPair({ source: null, target: null });
+        setLegalMoves([]);
+        arrayOfChildRefs.current.forEach((ref, i) => {
+          if (ref) ref.changeColor(getSquareColor(i));
+        });
+      }
     };
-
+    
     const handleChildClick_old = (clicked_id) => {
       const clickedId = parseInt(clicked_id);
       console.log('Clicked piece at index:', clickedId);

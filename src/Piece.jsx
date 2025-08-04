@@ -24,7 +24,33 @@ function Piece(props) {
     setColor(props.color)
     //check the name and set the legitimate paths .......
     if (props.myname === 'Rook') {
-      setMyLegitimatePaths([0, 8, 16, 24]) // Player 1's legitimate paths
+      const location = props.location;
+      const row = Math.floor(location / 8);
+      const col = location % 8;
+
+      let paths = [];
+
+      // Up
+      for (let r = row - 1; r >= 0; r--) {
+        paths.push(r * 8 + col);
+      }
+
+      // Down
+      for (let r = row + 1; r < 8; r++) {
+        paths.push(r * 8 + col);
+      }
+
+      // Left
+      for (let c = col - 1; c >= 0; c--) {
+        paths.push(row * 8 + c);
+      }
+
+      // Right
+      for (let c = col + 1; c < 8; c++) {
+        paths.push(row * 8 + c);
+      }
+
+      setMyLegitimatePaths(paths);
     } else if (props.myname === 'Player 2') {
       setMyLegitimatePaths([1, 9, 17, 25]) // Player 2's legitimate paths
     } else {
