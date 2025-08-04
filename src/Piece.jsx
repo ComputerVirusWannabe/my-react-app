@@ -9,19 +9,27 @@ function Piece(props) {
   const [id, setId] = useState(props.id)  // setId('0')
   const [color, setColor] = useState(props.color)
   const [name, setName] = useState(props.myname)
-  const [plaerName, setPlayerName] = useState('Player 1')
+  const [location, setLocation] = useState(props.location)
+  const [playerName, setPlayerName] = useState('Player 1')
+  const [myLegitimatePaths, setMyLegitimatePaths] = useState([0, 8, 16, 24 ])  // array of legitimate locations for me to move
 
   const { theme } = useContext(ThemeContext);
   
   //console.log('MyPiece prop id', props.id)
-
-  
 
   useEffect(() => {
    // console.log('Piece useEffect called with id:', props.id)
     setId(props.id)
     setName(props.myname)
     setColor(props.color)
+    //check the name and set the legitimate paths .......
+    if (props.myname === 'Rook') {
+      setMyLegitimatePaths([0, 8, 16, 24]) // Player 1's legitimate paths
+    } else if (props.myname === 'Player 2') {
+      setMyLegitimatePaths([1, 9, 17, 25]) // Player 2's legitimate paths
+    } else {
+      setMyLegitimatePaths([]) // Default case or for other players
+    }
   } , [props.id, props.myname, props.color])
 
 
@@ -31,7 +39,8 @@ function Piece(props) {
       console.log('Changing color to:', newColor)
       setColor(newColor)
     },
-    getName: () => props.myname
+    getName: () => props.myname,
+    getLegitimatePaths: () => myLegitimatePaths,
   }))
   
   const handleClick = (e) => {
@@ -59,10 +68,10 @@ function Piece(props) {
   return (
     <div className="card">
       <button
-        onClick={() => props.onPieceClick(id)}
+        onClick={() => props.onPieceClick(id, location)}
         style={styles}
       >
-        {name} * {id}
+        {name}, {id} At {location} 
       </button>
     </div>
   );  

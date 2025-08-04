@@ -2,12 +2,14 @@ import React from 'react';
 import Piece from './Piece.jsx';
 import { ThemeContext } from './context/ThemeContext';
 import { useContext } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const Board = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [selectedId, setSelectedId] = React.useState(null);
   const [legalMoves, setLegalMoves] = React.useState([]);
 
+  const [pair, setPair] = React.useState({source: null, target: null});
 
   const boardStyle = {
     display: 'grid',
@@ -23,51 +25,47 @@ const Board = () => {
     const arrayOfChildRefs = React.useRef([]); // Create a ref to store child component references
     const [pieces, setPieces] = React.useState([
         // Row 1 (Red pieces)
-        { id: '0', name: 'Rook', color: 'red' },
-        { id: '1', name: 'Knight', color: 'red' },
-        { id: '2', name: 'Bishop', color: 'red' },
-        { id: '3', name: 'Queen', color: 'red' },
-        { id: '4', name: 'King', color: 'red' },
-        { id: '5', name: 'Bishop', color: 'red' },
-        { id: '6', name: 'Knight', color: 'red' },
-        { id: '7', name: 'Rook', color: 'red' },
-      
-        // Row 2 (Red pawns)
-        { id: '8', name: 'Pawn', color: 'red' },
-        { id: '9', name: 'Pawn', color: 'red' },
-        { id: '10', name: 'Pawn', color: 'red' },
-        { id: '11', name: 'Pawn', color: 'red' },
-        { id: '12', name: 'Pawn', color: 'red' },
-        { id: '13', name: 'Pawn', color: 'red' },
-        { id: '14', name: 'Pawn', color: 'red' },
-        { id: '15', name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Rook', color: 'red' },
+        { id: uuidv4(), name: 'Knight', color: 'red' },
+        { id: uuidv4(), name: 'Bishop', color: 'red' },
+        { id: uuidv4(), name: 'Queen', color: 'red' },
+        { id: uuidv4(), name: 'King', color: 'red' },
+        { id: uuidv4(), name: 'Bishop', color: 'red' },
+        { id: uuidv4(), name: 'Knight', color: 'red' },
+        { id: uuidv4(), name: 'Rook', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
+        { id: uuidv4(), name: 'Pawn', color: 'red' },
       
         // Rows 3-6 (Empty spaces)
         ...Array(32).fill(null).map((_, index) => ({
-          id: `${16 + index}`,
+          id: uuidv4(),
           name: 'Empty',
           color: 'green',
         })),
       
         // Row 7 (Grey pawns)
-        { id: '48', name: 'Pawn', color: 'grey' },
-        { id: '49', name: 'Pawn', color: 'grey' },
-        { id: '50', name: 'Pawn', color: 'grey' },
-        { id: '51', name: 'Pawn', color: 'grey' },
-        { id: '52', name: 'Pawn', color: 'grey' },
-        { id: '53', name: 'Pawn', color: 'grey' },
-        { id: '54', name: 'Pawn', color: 'grey' },
-        { id: '55', name: 'Pawn', color: 'grey' },
-      
-        // Row 8 (Grey pieces)
-        { id: '56', name: 'Rook', color: 'grey' },
-        { id: '57', name: 'Knight', color: 'grey' },
-        { id: '58', name: 'Bishop', color: 'grey' },
-        { id: '59', name: 'Queen', color: 'grey' },
-        { id: '60', name: 'King', color: 'grey' },
-        { id: '61', name: 'Bishop', color: 'grey' },
-        { id: '62', name: 'Knight', color: 'grey' },
-        { id: '63', name: 'Rook', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Pawn', color: 'grey' },
+        { id: uuidv4(), name: 'Rook', color: 'grey' },
+        { id: uuidv4(), name: 'Knight', color: 'grey' },
+        { id: uuidv4(), name: 'Bishop', color: 'grey' },
+        { id: uuidv4(), name: 'Queen', color: 'grey' },
+        { id: uuidv4(), name: 'King', color: 'grey' },
+        { id: uuidv4(), name: 'Bishop', color: 'grey' },
+        { id: uuidv4(), name: 'Knight', color: 'grey' },
+        { id: uuidv4(), name: 'Rook', color: 'grey' },
       ]);
 
       const getSquareColor = (index) => {
@@ -97,8 +95,46 @@ const Board = () => {
     };
 
 
+    const handleChildClick = (clicked_id, clicked_location) => {
+        console.log('Clicked piece with id:', clicked_id, ' at location:', clicked_location);
+        if (pair.source === null) {  // clicked first piece
+            console.log('First piece clicked:', clicked_id);
+            //setPair({ source: clicked_id, target: null });
+            setPair({ source: {id: clicked_id, location: clicked_location}, target: null });
+            // highlight the clicked piece
+            arrayOfChildRefs.current[clicked_location].changeColor('yellow');
+        }
+        else if (pair.target === null) {  // clicked second piece
+            console.log('Second piece clicked, current pair = ', pair);
+            setPair({...pair, target: {id: clicked_id, location: clicked_location} });
+            arrayOfChildRefs.current[clicked_location].changeColor('cyan');
+            // Call the parent function to handle the move
+            // look in the source piece and get the legitimate paths
+            const legitimatePaths = arrayOfChildRefs.current[pair.source.location].getLegitimatePaths();
+            console.log('Legitimate paths for source piece:', legitimatePaths);
+        
 
-    const handleChildClick = (clicked_id) => {
+            if (legitimatePaths.includes(clicked_location)) {
+                console.log('Legitimate: Moving piece from', pair.source.location, 'to', clicked_location);
+                    //
+            // if target is in the legitimate paths of source,, then move the source piece to target location
+            // by  moving the piece in the pieces state (array) and update its location acordingly
+            // in the pieces state, move the piece from pair.source.location to clicked_location
+            const newPieces = [...pieces];
+            
+            newPieces[clicked_location] = pieces[pair.source.location];
+            newPieces[pair.source.location] = { id: `${pair.source.location}`, name: 'Empty', color: 'green' };
+            setPieces(newPieces);
+                // reset the pair
+                setPair({ source: null, target: null });
+            } else {
+                console.log('Illegimate, Invalid move, target location not in legitimate paths');
+            }
+        }
+        //console.log('Current pair:', pair);
+    };
+
+    const handleChildClick_old = (clicked_id) => {
       const clickedId = parseInt(clicked_id);
       console.log('Clicked piece at index:', clickedId);
     
@@ -172,13 +208,14 @@ const Board = () => {
       }
     
       // Handle move
-      if (legalMoves.includes(clickedId)) {
+      //if (legalMoves.includes(clickedId)) {
+      console.log('Moving piece from', selectedId, 'to', clickedId);
         const newPieces = [...pieces];
         newPieces[clickedId] = pieces[selectedId];
         newPieces[selectedId] = { id: `${selectedId}`, name: 'Empty', color: 'green' };
     
         setPieces(newPieces);
-      }
+     // }
     
       setSelectedId(null);
       setLegalMoves([]);
@@ -198,8 +235,13 @@ const Board = () => {
         setPieces(updatedPieces);
     }
   return (
+    <>
+    <div>DEBUG AREA
+      Pair: {JSON.stringify(pair)}
+      <br />
+    </div>
     <div>
-      <h1>Chess Board</h1>
+      <h3>Chess Board</h3>
       <div style={boardGridStyle}>
       {pieces.map((piece, index) => (
         <div
@@ -212,9 +254,10 @@ const Board = () => {
           }}
         >
           <Piece
-            id={index}
+            id={piece.id}
             myname={piece.name}
             color={piece.color}
+            location={index}
             onPieceClick={handleChildClick}
             ref={(el) => (arrayOfChildRefs.current[index] = el)}
           />
@@ -227,7 +270,7 @@ const Board = () => {
         Toggle Theme (current: {theme})
       </button>
     </div>
-    
+    </>
   );
 };
 
