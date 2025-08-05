@@ -9,7 +9,8 @@ const Board = () => {
   const [selectedId, setSelectedId] = React.useState(null);
   const [legalMoves, setLegalMoves] = React.useState([]);
 
-  const [pair, setPair] = React.useState({source: null, target: null});
+  const [pair, setPair] = React.useState({source: null, target: null, player_name: null});
+
 
   const boardStyle = {
     display: 'grid',
@@ -106,7 +107,7 @@ const Board = () => {
         console.log('First piece clicked:', clicked_id);
     
         // Save the selected piece
-        setPair({ source: { id: clicked_id, location: clicked_location }, target: null });
+        setPair({ source: { id: clicked_id, location: clicked_location }, target: null , name: });
     
         // Highlight selected square
         setSelectedId(clicked_location);
@@ -142,97 +143,6 @@ const Board = () => {
         setLegalMoves([]);
       }
     };
-    
-    
-    const handleChildClick_old = (clicked_id) => {
-      const clickedId = parseInt(clicked_id);
-      console.log('Clicked piece at index:', clickedId);
-    
-      // Deselect if clicking the selected piece
-      if (selectedId === clickedId) {
-        setSelectedId(null);
-        setLegalMoves([]);
-        return;
-      }
-    
-      // If no piece selected yet
-      if (selectedId === null) {
-        if (pieces[clickedId].name !== 'Empty') {
-          setSelectedId(clickedId);
-    
-          // If it's a pawn, calculate legal moves
-          const piece = pieces[clickedId];
-          if (piece.name === 'Pawn') {
-            const forwardDir = piece.color === 'red' ? 1 : -1;
-            const oneStep = clickedId + 8 * forwardDir;
-            const twoStep = clickedId + 16 * forwardDir;
-            const legal = [];
-    
-            if (pieces[oneStep] && pieces[oneStep].name === 'Empty') {
-              legal.push(oneStep);
-              // Allow 2-step if on initial rank
-              const startRow = piece.color === 'red' ? 1 : 6; //1 for red pawn line, 6 for grey pawn line
-              const row = Math.floor(clickedId / 8);
-              if (row === startRow && pieces[twoStep] && pieces[twoStep].name === 'Empty') {
-                legal.push(twoStep);
-              }
-            }
-    
-            setLegalMoves(legal);
-          } else if (piece.name === 'Rook') {
-            const legal = [];
-            const directions = [-1, 1, -8, 8]; // left, right, up, down
-            const startRow = Math.floor(clickedId / 8);
-          
-            for (const step of directions) {
-              let nextId = clickedId;
-          
-              while (true) {
-                nextId += step;
-          
-                // Stop if out of bounds
-                if (nextId < 0 || nextId >= 64) break;
-          
-                // Prevent left/right wrap-around
-                const nextRow = Math.floor(nextId / 8);
-                if ((step === -1 || step === 1) && nextRow !== Math.floor((nextId - step) / 8)) break;
-          
-                const target = pieces[nextId];
-          
-                if (target.name === 'Empty') {
-                  legal.push(nextId);
-                } else {
-                  if (target.color !== piece.color) {
-                    legal.push(nextId); // Can capture opponent piece
-                  }
-                  break; // Stop on any piece
-                }
-              }
-            }
-          
-            setLegalMoves(legal);
-          }
-          
-        }
-        return;
-      }
-    
-      // Handle move
-      //if (legalMoves.includes(clickedId)) {
-      console.log('Moving piece from', selectedId, 'to', clickedId);
-        const newPieces = [...pieces];
-        newPieces[clickedId] = pieces[selectedId];
-        newPieces[selectedId] = { id: `${selectedId}`, name: 'Empty', color: 'green' };
-    
-        setPieces(newPieces);
-     // }
-    
-      setSelectedId(null);
-      setLegalMoves([]);
-    };
-    
-    
-
 
     const testfunction = () => {
         console.log('testfunction called');

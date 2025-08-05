@@ -11,7 +11,7 @@ function Piece(props) {
   const [name, setName] = useState(props.myname)
   const [location, setLocation] = useState(props.location)
   const [playerName, setPlayerName] = useState('Player 1')
-  const [myLegitimatePaths, setMyLegitimatePaths] = useState([0, 8, 16, 24 ])  // array of legitimate locations for me to move
+  const [legitimatePaths, setLegitimatePaths] = useState([0, 8, 16, 24 ])  // array of legitimate locations for me to move
 
   const { theme } = useContext(ThemeContext);
   
@@ -22,11 +22,12 @@ function Piece(props) {
     setId(props.id)
     setName(props.myname)
     setColor(props.color)
+    setLocation(props.location)
     //check the name and set the legitimate paths .......
     if (props.myname === 'Rook') {
-      const location = props.location;
-      const row = Math.floor(location / 8);
-      const col = location % 8;
+     
+      const row = Math.floor(props.location / 8);
+      const col = props.location % 8;
 
       let paths = [];
 
@@ -50,19 +51,19 @@ function Piece(props) {
         paths.push(row * 8 + c);
       }
 
-      setMyLegitimatePaths(paths);
+      setLegitimatePaths(paths);
     } else if (props.myname === 'Player 2') {
-      setMyLegitimatePaths([1, 9, 17, 25]) // Player 2's legitimate paths
+      setLegitimatePaths([1, 9, 17, 25]) // Player 2's legitimate paths
     } else {
-      setMyLegitimatePaths([]) // Default case or for other players
+      setLegitimatePaths([]) // Default case or for other players
     }
-  } , [props.id, props.myname, props.color])
+  } , [props])
 
 
   
   useImperativeHandle(props.ref, () => ({
     getName: () => props.myname,
-    getLegitimatePaths: () => myLegitimatePaths,
+    getLegitimatePaths: () => legitimatePaths,
   }))
   
   const handleClick = (e) => {
