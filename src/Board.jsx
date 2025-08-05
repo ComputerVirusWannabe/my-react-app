@@ -98,27 +98,22 @@ const Board = () => {
     const handleChildClick = (clicked_id, clicked_location) => {
       console.log('Clicked piece with id:', clicked_id, ' at location:', clicked_location);
     
-      // Always clear all square colors
-      arrayOfChildRefs.current.forEach((ref, i) => {
-        if (ref) ref.changeColor(getSquareColor(i));
-      });
+      // Clear previous highlights
+      setSelectedId(null);
+      setLegalMoves([]);
     
       if (pair.source === null) {
         console.log('First piece clicked:', clicked_id);
     
+        // Save the selected piece
         setPair({ source: { id: clicked_id, location: clicked_location }, target: null });
     
-        // Highlight selected piece
-        arrayOfChildRefs.current[clicked_location].changeColor('yellow');
+        // Highlight selected square
+        setSelectedId(clicked_location);
     
-        // Highlight legal moves
+        // Get and highlight legal move squares
         const legal = arrayOfChildRefs.current[clicked_location].getLegitimatePaths();
         setLegalMoves(legal);
-        legal.forEach((i) => {
-          if (arrayOfChildRefs.current[i]) {
-            arrayOfChildRefs.current[i].changeColor('lightgreen');
-          }
-        });
     
       } else if (pair.target === null) {
         console.log('Second piece clicked, current pair = ', pair);
@@ -143,12 +138,11 @@ const Board = () => {
     
         // Reset everything
         setPair({ source: null, target: null });
+        setSelectedId(null);
         setLegalMoves([]);
-        arrayOfChildRefs.current.forEach((ref, i) => {
-          if (ref) ref.changeColor(getSquareColor(i));
-        });
       }
     };
+    
     
     const handleChildClick_old = (clicked_id) => {
       const clickedId = parseInt(clicked_id);

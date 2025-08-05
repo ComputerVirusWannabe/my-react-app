@@ -61,10 +61,6 @@ function Piece(props) {
 
   
   useImperativeHandle(props.ref, () => ({
-    changeColor: (newColor) => {
-      console.log('Changing color to:', newColor)
-      setColor(newColor)
-    },
     getName: () => props.myname,
     getLegitimatePaths: () => myLegitimatePaths,
   }))
