@@ -8,8 +8,9 @@ const Board = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [selectedId, setSelectedId] = React.useState(null);
   const [legalMoves, setLegalMoves] = React.useState([]);
+  const [playerTurn, setPlayerTurn] = React.useState('red'); // or 'grey'
 
-  const [pair, setPair] = React.useState({source: null, target: null, player_name: null});
+  const [pair, setPair] = React.useState({source: null, target: null});
 
 
   const boardStyle = {
@@ -22,7 +23,7 @@ const Board = () => {
     border: `2px solid ${theme === 'dark' ? '#444' : '#ccc'}`
   };
 
-  console.log('Board component rendered with theme:', theme);
+  //console.log('Board component rendered with theme:', theme);
     const arrayOfChildRefs = React.useRef([]); // Create a ref to store child component references
     const [pieces, setPieces] = React.useState([
         // Row 1 (Red pieces)
@@ -96,7 +97,8 @@ const Board = () => {
     };
 
 
-    const handleChildClick = (clicked_id, clicked_location) => {
+    const handlePieceClick = (clicked_id, clicked_location) => {
+      const clickedPiece = pieces[clicked_location];
       console.log('Clicked piece with id:', clicked_id, ' at location:', clicked_location);
     
       // Clear previous highlights
@@ -104,10 +106,20 @@ const Board = () => {
       setLegalMoves([]);
     
       if (pair.source === null) {
+        if (clickedPiece.name === 'Empty') {
+          console.log('Cannot select empty square.');
+          return;
+        }
+
+        if (clickedPiece.color !== playerTurn) {
+          console.log(`Not your turn! It's ${playerTurn}'s turn.`);
+          return;
+        }
+
         console.log('First piece clicked:', clicked_id);
     
         // Save the selected piece
-        setPair({ source: { id: clicked_id, location: clicked_location }, target: null , name: });
+        setPair({ source: { id: clicked_id, location: clicked_location }, target: null});
     
         // Highlight selected square
         setSelectedId(clicked_location);
@@ -131,8 +143,12 @@ const Board = () => {
             id: `${pair.source.location}`,
             name: 'Empty',
             color: 'green',
+            hasMoved: false,
           };
           setPieces(newPieces);
+
+          //Switching turns after a valid move
+          setPlayerTurn(playerTurn === 'red' ? 'grey' : 'red');
         } else {
           console.log('Invalid move');
         }
@@ -144,20 +160,11 @@ const Board = () => {
       }
     };
 
-    const testfunction = () => {
-        console.log('testfunction called');
-        // iterate through the pieces state and change the names of the pieces
-        const updatedPieces = pieces.map((piece, index) => ({
-            ...piece,
-            name: `Piece ${index + 1}` // Change the name of each piece
-        }));
-        console.log('****** Updated pieces:', updatedPieces);
-        setPieces(updatedPieces);
-    }
   return (
     <>
     <div>DEBUG AREA
       Pair: {JSON.stringify(pair)}
+      <h4>Current Turn: {playerTurn}</h4>
       <br />
     </div>
     <div>
@@ -175,17 +182,17 @@ const Board = () => {
         >
           <Piece
             id={piece.id}
-            myname={piece.name}
+            name={piece.name}
             color={piece.color}
             location={index}
-            onPieceClick={handleChildClick}
+            onPieceClick={handlePieceClick}
             ref={(el) => (arrayOfChildRefs.current[index] = el)}
+            board={pieces}
           />
         </div>
       ))}
       
       </div>
-      <button onClick = {testfunction}>Test Function</button>
       <button onClick={toggleTheme}>
         Toggle Theme (current: {theme})
       </button>

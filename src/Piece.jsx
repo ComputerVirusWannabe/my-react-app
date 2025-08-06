@@ -1,60 +1,119 @@
-import { forwardRef, use, useEffect, useImperativeHandle, useState } from 'react'
+import { forwardRef, use, useEffect, useImperativeHandle, useState, useContext} from 'react'
 import './App.css'
-import { useContext } from 'react'
 import { ThemeContext } from './context/ThemeContext'
 
 function Piece(props) {
   //const MyPiece = forwardRef((props, ref) => {
-  const [count, setCount] = useState(0)  //setCount(3)
   const [id, setId] = useState(props.id)  // setId('0')
   const [color, setColor] = useState(props.color)
-  const [name, setName] = useState(props.myname)
+  const [name, setName] = useState(props.name)
   const [location, setLocation] = useState(props.location)
-  const [playerName, setPlayerName] = useState('Player 1')
   const [legitimatePaths, setLegitimatePaths] = useState([0, 8, 16, 24 ])  // array of legitimate locations for me to move
-
   const { theme } = useContext(ThemeContext);
-  
-  //console.log('MyPiece prop id', props.id)
+
 
   useEffect(() => {
    // console.log('Piece useEffect called with id:', props.id)
+   console.log('Board in Piece useEffect:', props.board.map(p => p.name));
     setId(props.id)
-    setName(props.myname)
+    setName(props.name)
     setColor(props.color)
     setLocation(props.location)
+
     //check the name and set the legitimate paths .......
-    if (props.myname === 'Rook') {
-     
-      const row = Math.floor(props.location / 8);
-      const col = props.location % 8;
+    if (props.name === 'Rook') {
+
+      
+      const loc = props.location;
+      const row = Math.floor(loc / 8);
+      const col = loc % 8;
+      let paths = [];
+      const directions = [
+        { dr: -1, dc: 0 }, // up
+        { dr: 1, dc: 0 },  // down
+        { dr: 0, dc: -1 }, // left
+        { dr: 0, dc: 1 },  // right
+      ];
+
+      for (const { dr, dc } of directions) {
+        let r = row + dr;
+        let c = col + dc;
+
+        while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+          const index = r * 8 + c;
+          const targetPiece = props.board[index]; // Piece object or "Empty"
+
+          if (targetPiece.name === 'Empty') {
+            paths.push(index);
+          } else if (targetPiece.color !== props.color) {
+            // Enemy: capture allowed
+            paths.push(index);
+            break;
+          } else {
+            // Ally: blocked
+            break;
+          }
+
+          r += dr;
+          c += dc;
+        }
+        
+       
+      } 
+
+      setLegitimatePaths(paths);
+    }
+    else if (props.name === 'Pawn') {
+      const loc = props.location;
+      const row = Math.floor(loc / 8);
+      const col = loc % 8;
+      const board = props.board;
 
       let paths = [];
+      const direction = props.color === 'red' ? 1 : -1; // red moves down, grey moves up
 
-      // Up
-      for (let r = row - 1; r >= 0; r--) {
-        paths.push(r * 8 + col);
+      // Forward one step
+      const forwardIndex = loc + direction * 8;
+      if (forwardIndex >= 0 && forwardIndex < 64 && board[forwardIndex].name === 'Empty') {
+        paths.push(forwardIndex);
+
+        // Forward two steps only if on starting row
+        const startingRow = props.color === 'red' ? 1 : 6;
+        const forwardTwoIndex = loc + direction * 16;
+        if (row === startingRow && board[forwardTwoIndex].name === 'Empty') {
+          paths.push(forwardTwoIndex);
+        }
       }
 
-      // Down
-      for (let r = row + 1; r < 8; r++) {
-        paths.push(r * 8 + col);
+      // Captures diagonally
+      const captureLeft = loc + direction * 8 - 1;
+      const captureRight = loc + direction * 8 + 1;
+
+      // Check left diagonal capture
+      if (
+        captureLeft >= 0 &&
+        captureLeft < 64 &&
+        (captureLeft % 8) !== 7 && // prevent wraparound from col 0 to 7
+        board[captureLeft].name !== 'Empty' &&
+        board[captureLeft].color !== props.color
+      ) {
+        paths.push(captureLeft);
       }
 
-      // Left
-      for (let c = col - 1; c >= 0; c--) {
-        paths.push(row * 8 + c);
-      }
-
-      // Right
-      for (let c = col + 1; c < 8; c++) {
-        paths.push(row * 8 + c);
+      // Check right diagonal capture
+      if (
+        captureRight >= 0 &&
+        captureRight < 64 &&
+        (captureRight % 8) !== 0 && // prevent wraparound from col 7 to 0
+        board[captureRight].name !== 'Empty' &&
+        board[captureRight].color !== props.color
+      ) {
+        paths.push(captureRight);
       }
 
       setLegitimatePaths(paths);
-    } else if (props.myname === 'Player 2') {
-      setLegitimatePaths([1, 9, 17, 25]) // Player 2's legitimate paths
-    } else {
+    }
+    else {
       setLegitimatePaths([]) // Default case or for other players
     }
   } , [props])
@@ -62,20 +121,9 @@ function Piece(props) {
 
   
   useImperativeHandle(props.ref, () => ({
-    getName: () => props.myname,
+    getName: () => props.name,
     getLegitimatePaths: () => legitimatePaths,
   }))
-  
-  const handleClick = (e) => {
-    //props.func()
-    
-    //alert('Button clicked:', props.id)
-    //alert(e.target.innerText)
-    console.log('Piece name clicked:', name)
-    // call parent function
-    props.parent_func()
-   
-  }
 
   const styles = {
     //backgroundColor: theme === 'dark' ? 'orange' : 'green',
